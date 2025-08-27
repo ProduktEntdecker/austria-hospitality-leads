@@ -15,33 +15,39 @@ export class ClaudeService {
   async researchCompany(lead: Partial<Lead>): Promise<CompanyResearch> {
     try {
       const prompt = `
-        Research this Austrian hospitality business and extract relevant information:
+        Research this Austrian hospitality outfitting company and extract relevant B2B information:
         
         Company: ${lead.companyName}
-        Type: ${lead.type}
+        Business Type: ${lead.type}
         Website: ${lead.website}
         Location: ${lead.city}, ${lead.region}
         
+        This is a B2B service provider that OUTFITS and FURNISHES hotels and restaurants.
         Please provide:
-        1. Business overview and positioning
-        2. Recent renovations or expansions (last 5 years)
-        3. Key decision makers (if publicly available)
-        4. Estimated capacity (rooms/seats)
-        5. Target customer segment
-        6. Any planned renovations or changes
-        7. Ownership structure (chain/independent)
-        8. Interior design style/theme
+        1. Company overview and service positioning
+        2. Key services offered (interior design, furniture, lighting, etc.)
+        3. Key decision makers and contacts (if publicly available)
+        4. Employee count or company size
+        5. Target hospitality segments (luxury hotels, restaurants, etc.)
+        6. Recent projects or clients (if mentioned)
+        7. Service radius and geographical coverage
+        8. Certifications or industry memberships
+        9. Minimum project sizes or budget ranges
+        10. Portfolio strength and market reputation
         
         Format response as JSON with these fields:
         {
           overview: string,
-          lastRenovation: string | null,
-          decisionMakers: Array<{name: string, role: string}>,
-          capacity: number | null,
-          targetSegment: string,
-          plannedRenovations: boolean,
-          ownershipType: string,
-          designStyle: string,
+          services: Array<string>,
+          decisionMakers: Array<{name: string, role: string, email?: string}>,
+          employeeCount: number | null,
+          hospitalityFocus: Array<string>,
+          recentProjects: Array<{client: string, description: string, year: number}>,
+          serviceRadius: number | null,
+          certifications: Array<string>,
+          minimumProject: number | null,
+          portfolioStrength: 'excellent' | 'good' | 'average' | 'limited',
+          marketReputation: 'premium' | 'established' | 'growing' | 'unknown',
           businessHealth: 'growing' | 'stable' | 'declining',
           leadScore: number (0-100)
         }
@@ -79,16 +85,19 @@ export class ClaudeService {
   }> {
     try {
       const prompt = `
-        Evaluate this lead for Austrian hotel/restaurant interior design services:
+        Evaluate this Austrian hospitality outfitting company as a potential business partner/client:
         
         ${JSON.stringify(lead, null, 2)}
         
-        Criteria:
-        - Business must be active and operational
-        - Should have renovation potential (age, last renovation date)
-        - Budget indicators (star rating, location, size)
-        - Decision-making accessibility
-        - GDPR compliance for contact
+        This is a B2B evaluation for a company that provides services to hotels and restaurants.
+        
+        Validation criteria:
+        - Company must be active and operational in Austria
+        - Should serve the hospitality industry (hotels, restaurants, etc.)
+        - Has potential for partnership or client relationship
+        - Contact information available and GDPR compliant
+        - Company size and project capacity suitable for collaboration
+        - Geographic location allows for business relationship
         
         Return JSON with:
         {

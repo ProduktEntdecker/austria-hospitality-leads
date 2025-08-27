@@ -11,12 +11,12 @@ export class PerplexityService {
 
   async searchCompanyInfo(companyName: string, location: string): Promise<{
     recentNews: Array<{ title: string; url: string; date: string; summary: string }>;
-    renovationProjects: Array<{ description: string; date: string; source: string }>;
+    recentProjects: Array<{ description: string; client: string; date: string; source: string }>;
     businessMetrics: Record<string, any>;
     competitorInfo: string[];
   }> {
     try {
-      const searchQuery = `"${companyName}" hotel OR restaurant "${location}" Austria renovation OR expansion OR investment`;
+      const searchQuery = `"${companyName}" hoteleinrichtung OR hotelausstatter OR gastronomieeinrichtung "${location}" Austria`;
       
       const response = await axios.post(
         `${this.baseUrl}/chat/completions`,
@@ -25,19 +25,22 @@ export class PerplexityService {
           messages: [
             {
               role: 'system',
-              content: 'You are a business research assistant focused on Austrian hospitality industry. Provide accurate, recent information with sources.'
+              content: 'You are a business research assistant focused on Austrian hospitality outfitting industry. Research companies that provide services TO hotels and restaurants, not the hotels themselves.'
             },
             {
               role: 'user',
-              content: `Research this Austrian hospitality business:
+              content: `Research this Austrian hospitality outfitting company (B2B service provider):
                 Company: ${companyName}
                 Location: ${location}
                 
+                This company provides services TO hotels and restaurants (interior design, furniture, equipment, etc.).
+                
                 Find:
-                1. Recent news or announcements (last 2 years)
-                2. Any renovation or expansion projects
-                3. Business performance indicators
-                4. Main competitors in the region
+                1. Recent news, projects, or announcements (last 2 years)
+                2. Hotel/restaurant projects they have completed
+                3. Business performance and growth indicators
+                4. Main competitors in the Austrian hospitality outfitting market
+                5. Key clients or notable projects
                 
                 Format as JSON with sources.`
             }
@@ -63,7 +66,7 @@ export class PerplexityService {
         
         return {
           recentNews: this.extractNews(content),
-          renovationProjects: this.extractProjects(content),
+          recentProjects: this.extractProjects(content),
           businessMetrics: {},
           competitorInfo: this.extractCompetitors(content)
         };
@@ -88,15 +91,16 @@ export class PerplexityService {
           messages: [
             {
               role: 'user',
-              content: `Find key decision makers for:
+              content: `Find key decision makers for this Austrian hospitality outfitting company:
                 Company: ${companyName}
                 Website: ${companyWebsite}
                 
-                Look for:
-                - CEO/Managing Director
-                - Hotel/Restaurant Manager
-                - Purchasing Manager
-                - Facility Manager
+                Look for B2B service company roles:
+                - CEO/Managing Director (Geschäftsführer)
+                - Sales Director/Manager (Vertriebsleiter)
+                - Project Manager (Projektleiter)
+                - Interior Designer/Architect (Innenarchitekt)
+                - Business Development Manager
                 
                 Include LinkedIn profiles if available.
                 Format as JSON array.`

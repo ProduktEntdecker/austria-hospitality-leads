@@ -24,8 +24,8 @@ export default function DashboardPage() {
   return (
     <>
       <Head>
-        <title>Austria Hospitality Leads - Dashboard</title>
-        <meta name=\"description\" content=\"B2B lead generation for Austrian hotel and restaurant interior design market\" />
+        <title>Austria Hospitality Outfitters - Dashboard</title>
+        <meta name=\"description\" content=\"B2B directory of Austrian hospitality outfitting companies - interior designers, furniture suppliers, lighting specialists\" />
         <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />
         <link rel=\"icon\" href=\"/favicon.ico\" />
       </Head>
@@ -38,10 +38,10 @@ export default function DashboardPage() {
                 <Hotel className=\"h-8 w-8 text-blue-600\" />
                 <div>
                   <h1 className=\"text-xl font-semibold text-gray-900\">
-                    Austria Hospitality Leads
+                    Austria Hospitality Outfitters
                   </h1>
                   <p className=\"text-sm text-gray-500\">
-                    Interior Design Lead Generation
+                    B2B Service Provider Directory
                   </p>
                 </div>
               </div>
@@ -67,7 +67,7 @@ export default function DashboardPage() {
               <div>
                 <h2 className=\"text-2xl font-bold text-gray-900\">Dashboard</h2>
                 <p className=\"text-gray-600 mt-1\">
-                  Austrian hotel & restaurant lead generation overview
+                  Austrian hospitality outfitting companies and service providers
                 </p>
               </div>
               <div className=\"flex space-x-2\">

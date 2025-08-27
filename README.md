@@ -1,21 +1,26 @@
-# Austria Hospitality Leads - Hotel & Restaurant Outfitter Lead Generation System
+# Austria Hospitality Outfitters - B2B Service Provider Discovery System
 
 ## 🎯 Overview
 
-Professional B2B lead generation system for Austrian hotel and restaurant interior design/outfitting market. Combines web scraping, AI-powered data enrichment, and manual validation to identify high-quality leads.
+Professional B2B discovery system for Austrian hospitality outfitting companies. Identifies and enriches data about service providers who OUTFIT and FURNISH hotels and restaurants. Combines web scraping, AI-powered data enrichment, and validation to build a comprehensive directory of hospitality B2B suppliers.
 
-### Target Market
-- Hotels (4-5 star) in Austria
-- Restaurants (fine dining, boutique)
-- Wellness & Spa facilities
-- Event venues
-- Mountain lodges & resorts
+### Target Companies
+- Hotel interior design firms
+- Restaurant outfitting specialists  
+- Hospitality lighting designers
+- Commercial furniture suppliers for hotels/restaurants
+- Kitchen equipment suppliers for hotels
+- Hospitality textile and flooring specialists
+- Audio/visual technology providers
+- Wellness & spa equipment suppliers
 
 ### Key Features
-- Automated web scraping via N8N workflows
-- Multi-AI validation (Claude, Perplexity, ChatGPT)
+- Automated web scraping with German search terms ('hoteleinrichtung', 'hotelausstatter', 'gastronomieeinrichtung')
+- Multi-AI company research (Claude, Perplexity, ChatGPT)
+- Austrian business registry (UID) extraction from Impressum pages
 - GDPR-compliant data handling
-- Lead scoring & qualification
+- B2B service provider scoring & qualification
+- Company portfolio and specialization analysis
 - Manual review interface
 - CRM integration ready
 
@@ -150,13 +155,13 @@ npm run start
 
 ## 📊 Data Schema
 
-### Lead Model
+### Company Model
 ```typescript
-interface Lead {
+interface Company {
   id: string;
   companyName: string;
-  type: 'HOTEL' | 'RESTAURANT' | 'SPA' | 'VENUE';
-  category: string; // e.g., '4-star', 'boutique', 'luxury'
+  type: 'INTERIOR_DESIGN' | 'HOTEL_OUTFITTER' | 'RESTAURANT_OUTFITTER' | 'LIGHTING_SPECIALIST' | 'FURNITURE_SUPPLIER' | 'KITCHEN_EQUIPMENT';
+  category: string; // e.g., 'luxury specialist', 'commercial supplier'
   
   // Contact Information
   website: string;
@@ -166,24 +171,30 @@ interface Lead {
   // Location
   address: string;
   city: string;
-  region: string; // e.g., 'Tirol', 'Wien'
+  region: string; // e.g., 'Tirol', 'Wien'  
   postalCode: string;
   
   // Business Details
-  capacity: number; // rooms/seats
-  lastRenovation: Date;
+  employeeCount: number; // company size
   yearEstablished: number;
-  ownershipType: string;
+  serviceRadius: number; // service area in km
+  uid: string; // Austrian business ID
   
-  // Lead Scoring
+  // Service Details
+  specializations: string[]; // hospitality sectors served
+  certifications: string[]; // relevant certifications
+  portfolioUrl: string; // portfolio website
+  minimumProject: number; // minimum project size EUR
+  
+  // Business Intelligence
   score: number; // 0-100
   qualificationStatus: 'NEW' | 'QUALIFIED' | 'CONTACTED' | 'OPPORTUNITY';
-  renovationPlanned: boolean;
-  budget: string;
+  currentProjects: number; // active project count
+  avgProjectValue: number; // average project value
+  hospitalityFocus: string[]; // target segments
   
   // Enrichment
   decisionMakers: Contact[];
-  competitorInfo: string[];
   recentProjects: Project[];
   
   // Metadata
@@ -235,11 +246,11 @@ npm test
 ## 📈 Performance Metrics
 
 ### Target KPIs
-- Lead identification: 500+ leads/month
-- Validation accuracy: >95%
-- Processing time: <30s per lead
-- Manual review: <2 min per lead
-- Cost per lead: <€0.50
+- Company identification: 200+ companies/month
+- Data accuracy: >95%
+- Processing time: <45s per company
+- Manual review: <3 min per company  
+- Cost per company: <€0.75
 
 ## 🔒 Security & Compliance
 
@@ -282,7 +293,9 @@ Proprietary - All rights reserved
 
 ## 🏆 Credits
 
-Built with focus on the Austrian hospitality market by [Your Company]
+Built with focus on Austrian hospitality B2B service providers by [Your Company]
+
+**Market Focus**: Austrian companies that provide services TO the hospitality industry - interior designers, outfitters, suppliers, and specialists serving hotels and restaurants.
 
 ---
 

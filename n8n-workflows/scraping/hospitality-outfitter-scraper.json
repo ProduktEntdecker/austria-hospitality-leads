@@ -1,0 +1,345 @@
+{
+  "name": "Austrian Hospitality Outfitter Scraper",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start-node",
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "searchTerms",
+              "value": "={{ ['hoteleinrichtung österreich', 'hotelausstatter wien', 'gastronomieeinrichtung austria', 'innenarchitekt hotel restaurant', 'lichtplanung gastronomie', 'möbel hotel restaurant österreich', 'hoteldesign innenarchitektur'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "search-terms",
+      "name": "Search Terms",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "searchTerms",
+        "options": {}
+      },
+      "id": "split-search-terms",
+      "name": "Split Search Terms",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 3,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://www.google.com/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{$json.searchTerms}} site:at OR inurl:österreich OR inurl:austria"
+            },
+            {
+              "name": "num",
+              "value": "50"
+            },
+            {
+              "name": "hl",
+              "value": "de"
+            }
+          ]
+        },
+        "options": {
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (compatible; AustriaHospitalityBot/1.0; +https://austrialeads.at/bot)"
+          }
+        }
+      },
+      "id": "google-search",
+      "name": "Google Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "mode": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "searchResults",
+              "cssSelector": ".g",
+              "returnValue": "html"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-search-results",
+      "name": "Extract Search Results",
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Extract company information from Google search results\nconst items = $input.all();\nconst companies = [];\n\nfor (const item of items) {\n  if (!item.json.searchResults) continue;\n  \n  const html = item.json.searchResults;\n  \n  // Extract URLs and titles using regex\n  const urlMatches = html.match(/href=\"\\/url\\?q=([^&]+)/g) || [];\n  const titleMatches = html.match(/<h3[^>]*>([^<]+)<\\/h3>/g) || [];\n  const snippetMatches = html.match(/<div[^>]*class=\"[^\"]*s75CSd[^\"]*\"[^>]*>([^<]+)<\\/div>/g) || [];\n  \n  for (let i = 0; i < Math.min(urlMatches.length, titleMatches.length); i++) {\n    try {\n      const url = decodeURIComponent(urlMatches[i].replace('href=\"/url?q=', ''));\n      const title = titleMatches[i].replace(/<[^>]*>/g, '').trim();\n      const snippet = snippetMatches[i] ? snippetMatches[i].replace(/<[^>]*>/g, '').trim() : '';\n      \n      // Skip non-Austrian domains and irrelevant results\n      if (!url.includes('.at') && !url.toLowerCase().includes('austria') && !url.toLowerCase().includes('österreich')) {\n        continue;\n      }\n      \n      // Skip hotel/restaurant websites (we want the suppliers)\n      const excludeTerms = ['hotel booking', 'restaurant tisch', 'reservierung', 'zimmer buchen', 'wellness urlaub'];\n      const titleLower = title.toLowerCase();\n      const snippetLower = snippet.toLowerCase();\n      \n      if (excludeTerms.some(term => titleLower.includes(term) || snippetLower.includes(term))) {\n        continue;\n      }\n      \n      // Look for B2B service indicators\n      const serviceIndicators = ['gmbh', 'kg', 'ag', 'planung', 'beratung', 'lieferung', 'montage', 'installation'];\n      const hasServiceIndicator = serviceIndicators.some(term => \n        titleLower.includes(term) || snippetLower.includes(term)\n      );\n      \n      // Classify business type based on content\n      let businessType = 'OTHER';\n      if (titleLower.includes('innenarchitekt') || titleLower.includes('interior') || titleLower.includes('design')) {\n        businessType = 'INTERIOR_DESIGN';\n      } else if (titleLower.includes('hotelausstatt') || titleLower.includes('hoteleinricht')) {\n        businessType = 'HOTEL_OUTFITTER';\n      } else if (titleLower.includes('gastronomie') || titleLower.includes('restaurant')) {\n        businessType = 'RESTAURANT_OUTFITTER';\n      } else if (titleLower.includes('licht') || titleLower.includes('beleucht')) {\n        businessType = 'LIGHTING_SPECIALIST';\n      } else if (titleLower.includes('möbel') || titleLower.includes('furniture')) {\n        businessType = 'FURNITURE_SUPPLIER';\n      } else if (titleLower.includes('küche') || titleLower.includes('kitchen')) {\n        businessType = 'KITCHEN_EQUIPMENT';\n      }\n      \n      companies.push({\n        json: {\n          companyName: title,\n          website: url,\n          type: businessType,\n          description: snippet,\n          searchTerm: item.json.searchTerms,\n          source: 'google_search',\n          hasServiceIndicator,\n          scrapedAt: new Date().toISOString(),\n          needsDetailScraping: true\n        }\n      });\n    } catch (error) {\n      console.log('Error processing search result:', error.message);\n    }\n  }\n}\n\n// Remove duplicates based on website\nconst uniqueCompanies = [];\nconst seenUrls = new Set();\n\nfor (const company of companies) {\n  const domain = new URL(company.json.website).hostname;\n  if (!seenUrls.has(domain)) {\n    seenUrls.add(domain);\n    uniqueCompanies.push(company);\n  }\n}\n\nconsole.log(`Found ${uniqueCompanies.length} unique companies`);\nreturn uniqueCompanies.slice(0, 20); // Limit to top 20 per search term"
+      },
+      "id": "process-search-results",
+      "name": "Process Search Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{$json.needsDetailScraping}}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter-needs-scraping",
+      "name": "Filter Needs Scraping",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$json.website}}",
+        "options": {
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (compatible; AustriaHospitalityBot/1.0)"
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "scrape-company-website",
+      "name": "Scrape Company Website",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1650, 200]
+    },
+    {
+      "parameters": {
+        "mode": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "impressum",
+              "cssSelector": "a[href*='impressum'], a[href*='imprint'], a[href*='kontakt'], a[href*='contact']",
+              "returnValue": "attribute",\n              "attribute": "href"
+            },\n            {\n              "key": "contactInfo",\n              "cssSelector": "[class*='contact'], [id*='contact'], [class*='impressum'], [id*='impressum']",\n              "returnValue": "text"\n            },\n            {\n              "key": "aboutText",\n              "cssSelector": "[class*='about'], [id*='about'], [class*='ueber'], [id*='ueber'], .company-info, .unternehmen",\n              "returnValue": "text"\n            },\n            {\n              "key": "servicesText",\n              "cssSelector": "[class*='service'], [id*='service'], [class*='leistung'], [id*='leistung'], .portfolio, .referenz",\n              "returnValue": "text"\n            },\n            {\n              "key": "metaDescription",\n              "cssSelector": "meta[name='description']",\n              "returnValue": "attribute",\n              "attribute": "content"\n            },\n            {\n              "key": "title",\n              "cssSelector": "title",\n              "returnValue": "text"\n            }\n          ]\n        }\n      },\n      "id": "extract-website-data",\n      "name": "Extract Website Data",\n      "type": "n8n-nodes-base.html",\n      "typeVersion": 1,\n      "position": [1850, 200]\n    },\n    {\n      "parameters": {\n        "method": "GET",\n        "url": "={{$json.website}}{{$json.impressum}}",\n        "options": {\n          "headers": {\n            "User-Agent": "Mozilla/5.0 (compatible; AustriaHospitalityBot/1.0)"\n          },\n          "timeout": 15000,\n          "ignoreHttpStatusErrors": true\n        }\n      },\n      "id": "scrape-impressum",\n      "name": "Scrape Impressum",\n      "type": "n8n-nodes-base.httpRequest",\n      "typeVersion": 4.1,\n      "position": [2050, 100],\n      "continueOnFail": true\n    },\n    {\n      "parameters": {\n        "mode": "extractHtmlContent",\n        "extractionValues": {\n          "values": [\n            {\n              "key": "uid",\n              "cssSelector": "body",\n              "returnValue": "text"\n            },\n            {\n              "key": "address",\n              "cssSelector": "body",\n              "returnValue": "text"\n            },\n            {\n              "key": "contactDetails",\n              "cssSelector": "body",\n              "returnValue": "text"\n            }\n          ]\n        }\n      },\n      "id": "extract-impressum-data",\n      "name": "Extract Impressum Data",\n      "type": "n8n-nodes-base.html",\n      "typeVersion": 1,\n      "position": [2250, 100]\n    },\n    {\n      "parameters": {\n        "functionCode": "// Process and clean extracted company data\nconst item = $input.first();\nconst websiteData = item.json;\n\n// Extract UID (Austrian business ID) from impressum\nfunction extractUID(text) {\n  if (!text) return null;\n  const uidMatch = text.match(/UID[:\\s]*([A-Z]{2}[0-9]{8,9})/i);\n  return uidMatch ? uidMatch[1] : null;\n}\n\n// Extract Austrian postal code and city\nfunction extractLocation(text) {\n  if (!text) return { city: null, postalCode: null };\n  \n  const locationMatch = text.match(/(\\d{4})\\s+([A-ZÄÖÜ][a-zäöüß\\s]+)/g);\n  if (locationMatch) {\n    const parts = locationMatch[0].split(/\\s+/);\n    return {\n      postalCode: parts[0],\n      city: parts.slice(1).join(' ').trim()\n    };\n  }\n  return { city: null, postalCode: null };\n}\n\n// Extract email addresses\nfunction extractEmails(text) {\n  if (!text) return [];\n  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/g;\n  return (text.match(emailRegex) || []).slice(0, 3); // Max 3 emails\n}\n\n// Extract phone numbers (Austrian format)\nfunction extractPhones(text) {\n  if (!text) return [];\n  const phoneRegex = /(\\+43|0043|0)\\s?[1-9]\\d{1,14}/g;\n  return (text.match(phoneRegex) || []).slice(0, 2); // Max 2 phones\n}\n\n// Determine Austrian region from postal code\nfunction getRegionFromPostalCode(postalCode) {\n  if (!postalCode) return null;\n  const code = parseInt(postalCode);\n  \n  if (code >= 1010 && code <= 1230) return 'Wien';\n  if (code >= 2000 && code <= 3970) return 'Niederösterreich';\n  if (code >= 4000 && code <= 4990) return 'Oberösterreich';\n  if (code >= 5000 && code <= 5990) return 'Salzburg';\n  if (code >= 6000 && code <= 6992) return 'Tirol';\n  if (code >= 7000 && code <= 7491) return 'Burgenland';\n  if (code >= 8000 && code <= 8990) return 'Steiermark';\n  if (code >= 9000 && code <= 9991) return 'Kärnten';\n  if (code >= 6700 && code <= 6991) return 'Vorarlberg';\n  \n  return 'Unknown';\n}\n\n// Analyze services to refine business type\nfunction analyzeServices(text) {\n  if (!text) return { specializations: [], certifications: [] };\n  \n  const textLower = text.toLowerCase();\n  const specializations = [];\n  const certifications = [];\n  \n  // Hospitality focus analysis\n  if (textLower.includes('luxury') || textLower.includes('5-stern') || textLower.includes('luxus')) {\n    specializations.push('LUXURY_HOTELS');\n  }\n  if (textLower.includes('boutique')) {\n    specializations.push('BOUTIQUE_HOTELS');\n  }\n  if (textLower.includes('wellness') || textLower.includes('spa')) {\n    specializations.push('WELLNESS_SPAS');\n  }\n  if (textLower.includes('fine dining') || textLower.includes('gehobene gastronomie')) {\n    specializations.push('FINE_DINING');\n  }\n  \n  // Certifications\n  if (textLower.includes('iso')) certifications.push('ISO certified');\n  if (textLower.includes('zertifiziert')) certifications.push('Certified');\n  if (textLower.includes('mitglied')) certifications.push('Association member');\n  \n  return { specializations, certifications };\n}\n\n// Process the data\nconst allText = [websiteData.contactInfo, websiteData.aboutText, websiteData.servicesText, websiteData.uid, websiteData.address].join(' ');\nconst location = extractLocation(allText);\nconst services = analyzeServices(websiteData.servicesText + ' ' + websiteData.aboutText);\n\nconst processedCompany = {\n  companyName: websiteData.title || websiteData.companyName || 'Unknown Company',\n  type: websiteData.type,\n  website: websiteData.website,\n  \n  // Contact information\n  email: extractEmails(allText)[0] || null,\n  phone: extractPhones(allText)[0] || null,\n  \n  // Location\n  city: location.city,\n  postalCode: location.postalCode,\n  region: getRegionFromPostalCode(location.postalCode),\n  address: websiteData.address || null,\n  \n  // Business details\n  uid: extractUID(allText),\n  specializations: services.specializations,\n  certifications: services.certifications,\n  \n  // Metadata\n  description: websiteData.metaDescription || websiteData.aboutText?.substring(0, 200) || null,\n  source: 'website_scraping',\n  sourceUrl: websiteData.website,\n  scrapedAt: new Date().toISOString(),\n  \n  // Quality indicators\n  hasImpressum: !!websiteData.impressum,\n  hasUID: !!extractUID(allText),\n  hasValidContact: !!(extractEmails(allText).length > 0 || extractPhones(allText).length > 0),\n  \n  // Raw data for further processing\n  rawData: {\n    websiteContent: websiteData,\n    extractedEmails: extractEmails(allText),\n    extractedPhones: extractPhones(allText)\n  }\n};\n\nreturn [{ json: processedCompany }];"
+      },
+      "id": "process-company-data",
+      "name": "Process Company Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2450, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{$json.hasValidContact}}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            },
+            {
+              "id": "condition2", 
+              "leftValue": "={{$json.city}}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "quality-filter",
+      "name": "Quality Filter",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2650, 200]
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "id": "batch-for-api",
+      "name": "Batch for API",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [2850, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env['BACKEND_API_URL']}}/api/webhooks/n8n/scraping",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "workflow",
+              "value": "hospitality-outfitter-scraper"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{Date.now()}}"
+            },
+            {
+              "name": "leads",
+              "value": "={{$json}}"
+            },
+            {
+              "name": "searchTerm",
+              "value": "={{$json.searchTerm}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "send-to-backend",
+      "name": "Send to Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [3050, 100],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "backend-api-auth",
+          "name": "Backend API Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2000,
+        "unit": "ms"
+      },
+      "id": "rate-limiter",
+      "name": "Rate Limiter",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [3250, 100]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [[{"node": "Search Terms", "type": "main", "index": 0}]]
+    },
+    "Search Terms": {
+      "main": [[{"node": "Split Search Terms", "type": "main", "index": 0}]]
+    },
+    "Split Search Terms": {
+      "main": [[{"node": "Google Search", "type": "main", "index": 0}]]
+    },
+    "Google Search": {
+      "main": [[{"node": "Extract Search Results", "type": "main", "index": 0}]]
+    },
+    "Extract Search Results": {
+      "main": [[{"node": "Process Search Results", "type": "main", "index": 0}]]
+    },
+    "Process Search Results": {
+      "main": [[{"node": "Filter Needs Scraping", "type": "main", "index": 0}]]
+    },
+    "Filter Needs Scraping": {
+      "main": [
+        [{"node": "Scrape Company Website", "type": "main", "index": 0}],
+        []
+      ]
+    },
+    "Scrape Company Website": {
+      "main": [[{"node": "Extract Website Data", "type": "main", "index": 0}]]
+    },
+    "Extract Website Data": {
+      "main": [
+        [{"node": "Scrape Impressum", "type": "main", "index": 0}],
+        [{"node": "Process Company Data", "type": "main", "index": 0}]
+      ]
+    },
+    "Scrape Impressum": {
+      "main": [[{"node": "Extract Impressum Data", "type": "main", "index": 0}]]
+    },
+    "Extract Impressum Data": {
+      "main": [[{"node": "Process Company Data", "type": "main", "index": 0}]]
+    },
+    "Process Company Data": {
+      "main": [[{"node": "Quality Filter", "type": "main", "index": 0}]]
+    },
+    "Quality Filter": {
+      "main": [
+        [{"node": "Batch for API", "type": "main", "index": 0}],
+        []
+      ]
+    },
+    "Batch for API": {
+      "main": [
+        [{"node": "Send to Backend", "type": "main", "index": 0}],
+        [{"node": "Rate Limiter", "type": "main", "index": 0}]
+      ]
+    },
+    "Send to Backend": {
+      "main": [[{"node": "Rate Limiter", "type": "main", "index": 0}]]
+    },
+    "Rate Limiter": {
+      "main": [[{"node": "Batch for API", "type": "main", "index": 0}]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "error-handler-workflow"
+  },
+  "tags": ["scraping", "hospitality", "outfitters", "b2b", "austria"],
+  "triggerCount": 0,
+  "versionId": "2.0.0",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

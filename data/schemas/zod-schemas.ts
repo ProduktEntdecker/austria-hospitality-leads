@@ -8,16 +8,38 @@ export const PostalCodeSchema = z.string().regex(/^\d{4}$/, 'Invalid Austrian po
 
 // Business Type Schema
 export const BusinessTypeSchema = z.enum([
-  'HOTEL',
-  'RESTAURANT', 
-  'SPA',
-  'VENUE',
-  'RESORT',
-  'LODGE',
-  'PENSION',
-  'CAFE',
-  'BAR',
+  'INTERIOR_DESIGN',      // Innenarchitektur für Hotels/Restaurants
+  'HOTEL_OUTFITTER',      // Hotelausstatter
+  'RESTAURANT_OUTFITTER', // Gastronomieeinrichtung
+  'LIGHTING_SPECIALIST',  // Lichtplanung
+  'FURNITURE_SUPPLIER',   // Möbellieferant
+  'KITCHEN_EQUIPMENT',    // Küchenausstattung
+  'TEXTILE_SUPPLIER',     // Textilien/Bettwäsche
+  'FLOORING_SPECIALIST',  // Bodenbeläge
+  'BATHROOM_OUTFITTER',   // Badeinrichtung
+  'AV_TECHNOLOGY',        // Audio/Video Technik
+  'SIGNAGE_DESIGN',       // Beschilderung/Corporate Design
+  'WELLNESS_EQUIPMENT',   // Wellness/Spa Ausstattung
   'OTHER'
+]);
+
+// Hospitality Focus Schema
+export const HospitalityFocusSchema = z.enum([
+  'LUXURY_HOTELS',      // 5-Stern Hotels
+  'BUSINESS_HOTELS',    // Business Hotels
+  'BOUTIQUE_HOTELS',    // Boutique Hotels
+  'CHAIN_HOTELS',       // Hotelketten
+  'INDEPENDENT_HOTELS', // Unabhängige Hotels
+  'FINE_DINING',        // Gehobene Gastronomie
+  'CASUAL_DINING',      // Casual Restaurants
+  'FAST_FOOD',          // Schnellrestaurants
+  'BARS_LOUNGES',       // Bars & Lounges
+  'CAFES',              // Cafés
+  'WELLNESS_SPAS',      // Wellness & Spa
+  'CONFERENCE_VENUES',  // Tagungshotels
+  'MOUNTAIN_LODGES',    // Berghütten
+  'URBAN_VENUES',       // Stadthotels
+  'RESORT_HOTELS'       // Resort Hotels
 ]);
 
 // Austrian Regions Schema
@@ -79,10 +101,15 @@ export const LeadSchema = z.object({
   longitude: z.number().min(-180).max(180).optional(),
   
   // Business details
-  capacity: z.number().int().min(1).max(10000).optional(),
-  lastRenovation: z.date().optional(),
+  employeeCount: z.number().int().min(1).max(10000).optional(),
   yearEstablished: z.number().int().min(1800).max(new Date().getFullYear()).optional(),
-  starRating: z.number().int().min(1).max(5).optional(),
+  serviceRadius: z.number().int().min(1).max(1000).optional(), // service radius in km
+  
+  // B2B Service Details
+  specializations: z.array(z.string()).default([]),
+  certifications: z.array(z.string()).default([]),
+  portfolioUrl: z.string().url().optional(),
+  minimumProject: z.number().int().min(1000).optional(), // minimum project size in EUR
   
   // Lead management
   status: LeadStatusSchema.default('NEW'),
@@ -91,8 +118,9 @@ export const LeadSchema = z.object({
   assignedTo: z.string().optional(),
   
   // Business intelligence
-  renovationPlanned: z.boolean().default(false),
-  budgetRange: BudgetRangeSchema.optional(),
+  currentProjects: z.number().int().min(0).default(0),
+  avgProjectValue: z.number().int().min(1000).optional(),
+  hospitalityFocus: z.array(HospitalityFocusSchema).default([]),
   decisionMakerRole: z.string().max(100).optional(),
   
   // Metadata
