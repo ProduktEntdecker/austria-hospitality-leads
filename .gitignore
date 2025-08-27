@@ -1,0 +1,141 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production builds
+dist/
+build/
+out/
+.next/
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+postgres-data/
+mysql-data/
+data/backups/
+
+# Redis
+dump.rdb
+redis-data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.bak
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+*.lcov
+
+# N8N
+n8n-data/
+.n8n/
+n8n-workflows/exports/
+*.workflow.json.backup
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.cache/
+*.tmp
+*.temp
+
+# API Keys and Secrets
+*.pem
+*.key
+*.cert
+*.crt
+secrets/
+credentials/
+
+# Generated files
+generated/
+*.generated.ts
+*.generated.js
+schema.graphql
+
+# Documentation builds
+docs/_build/
+docs/.docusaurus/
+storybook-static/
+
+# Package manager
+.npm/
+.yarn/
+.pnpm-store/
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+desktop.ini
+
+# Docker
+docker-compose.override.yml
+.dockerignore.local
+
+# Monitoring
+.monitoring/
+grafana-data/
+prometheus-data/
+
+# Backups
+backups/
+*.backup
+*.dump
+
+# Lead data (sensitive)
+exports/
+leads-export-*.csv
+leads-export-*.json
+customer-data/
+
+# Session data
+sessions/
+*.session
+
+# Upload directories
+uploads/
+public/uploads/
+
+# Build analytics
+.build-analytics/
+webpack-stats.json
+bundle-report.html

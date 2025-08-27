@@ -1,0 +1,226 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: austria-leads-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: austria_leads
+      POSTGRES_USER: ${DB_USER:-austria_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-austria_pass_dev}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./data/migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    networks:
+      - austria-leads
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-austria_user} -d austria_leads"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis for Caching and Job Queue
+  redis:
+    image: redis:7-alpine
+    container_name: austria-leads-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_pass_dev}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - austria-leads
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: ${BUILD_TARGET:-development}
+    container_name: austria-leads-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3001
+      DATABASE_URL: postgresql://${DB_USER:-austria_user}:${DB_PASSWORD:-austria_pass_dev}@postgres:5432/austria_leads
+      REDIS_URL: redis://:${REDIS_PASSWORD:-redis_pass_dev}@redis:6379
+      
+      # API Keys (from environment)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      PERPLEXITY_API_KEY: ${PERPLEXITY_API_KEY}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      
+      # N8N Integration
+      N8N_HOST: ${N8N_HOST:-http://n8n:5678}
+      N8N_API_KEY: ${N8N_API_KEY}
+      N8N_WEBHOOK_URL: http://backend:3001/api/webhooks/n8n
+      
+      # Security
+      JWT_SECRET: ${JWT_SECRET:-jwt_secret_dev_change_in_production}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-32_char_encryption_key_dev_only}
+      SESSION_SECRET: ${SESSION_SECRET:-session_secret_dev_change_this}
+    volumes:
+      - ./backend/src:/app/src:ro
+      - ./backend/uploads:/app/uploads
+      - ./logs:/app/logs
+    ports:
+      - "${API_PORT:-3001}:3001"
+    networks:
+      - austria-leads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: ${BUILD_TARGET:-development}
+    container_name: austria-leads-frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:${API_PORT:-3001}
+      NEXT_PUBLIC_APP_NAME: "Austria Hospitality Leads"
+      PORT: 3000
+    volumes:
+      - ./frontend/src:/app/src:ro
+      - ./frontend/public:/app/public:ro
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    networks:
+      - austria-leads
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # N8N Automation Platform
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: austria-leads-n8n
+    restart: unless-stopped
+    environment:
+      # Database
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: austria_leads_n8n
+      DB_POSTGRESDB_USER: ${DB_USER:-austria_user}
+      DB_POSTGRESDB_PASSWORD: ${DB_PASSWORD:-austria_pass_dev}
+      
+      # N8N Configuration
+      N8N_BASIC_AUTH_ACTIVE: true
+      N8N_BASIC_AUTH_USER: ${N8N_USER:-admin}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_PASSWORD:-admin_pass_dev}
+      N8N_HOST: ${N8N_DOMAIN:-localhost}
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-http}
+      N8N_PORT: 5678
+      
+      # Webhook URL
+      WEBHOOK_URL: http://n8n:5678
+      
+      # Generic OAuth
+      N8N_CONFIG_FILES: /config
+      
+      # Execution settings
+      EXECUTIONS_TIMEOUT: 3600
+      EXECUTIONS_TIMEOUT_MAX: 7200
+      
+      # Security
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-n8n_encryption_key_dev}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n-workflows:/home/node/workflows:ro
+      - ./scripts/n8n:/config:ro
+    ports:
+      - "${N8N_PORT:-5678}:5678"
+    networks:
+      - austria-leads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Monitoring with Prometheus (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: austria-leads-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    networks:
+      - austria-leads
+    profiles:
+      - monitoring
+
+  # Grafana for Dashboards (optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: austria-leads-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana:/etc/grafana/provisioning:ro
+    ports:
+      - "${GRAFANA_PORT:-3030}:3000"
+    networks:
+      - austria-leads
+    profiles:
+      - monitoring
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  n8n_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  austria-leads:
+    driver: bridge
+    name: austria-leads-network

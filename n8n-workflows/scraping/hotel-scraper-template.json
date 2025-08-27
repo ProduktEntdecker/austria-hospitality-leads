@@ -1,0 +1,165 @@
+{
+  "name": "Austrian Hotel Directory Scraper",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start-node",
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.austriatourism.at/hotels",
+        "options": {
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (compatible; AustriaLeadsBot/1.0)"
+          }
+        }
+      },
+      "id": "fetch-directory",
+      "name": "Fetch Hotel Directory",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "mode": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "hotelName",
+              "cssSelector": ".hotel-name",
+              "returnValue": "text"
+            },
+            {
+              "key": "location",
+              "cssSelector": ".hotel-location",
+              "returnValue": "text"
+            },
+            {
+              "key": "category",
+              "cssSelector": ".hotel-stars",
+              "returnValue": "text"
+            },
+            {
+              "key": "website",
+              "cssSelector": ".hotel-link",
+              "returnValue": "attribute",
+              "attribute": "href"
+            }
+          ]
+        }
+      },
+      "id": "extract-data",
+      "name": "Extract Hotel Data",
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const items = $input.all();\nconst processedItems = [];\n\nfor (const item of items) {\n  const hotel = item.json;\n  \n  // Clean and validate data\n  if (hotel.hotelName && hotel.location) {\n    processedItems.push({\n      json: {\n        companyName: hotel.hotelName.trim(),\n        type: 'HOTEL',\n        city: hotel.location.split(',')[0].trim(),\n        region: hotel.location.split(',')[1]?.trim() || 'Unknown',\n        category: hotel.category || 'Unrated',\n        website: hotel.website || '',\n        source: 'austriatourism.at',\n        scrapedAt: new Date().toISOString()\n      }\n    });\n  }\n}\n\nreturn processedItems;"
+      },
+      "id": "process-data",
+      "name": "Process & Clean Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env[\"BACKEND_API_URL\"]}}/api/webhooks/n8n/scraping",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "leads",
+              "value": "={{$json}}"
+            },
+            {
+              "name": "workflow",
+              "value": "hotel-directory-scraper"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{Date.now()}}"
+            }
+          ]
+        }
+      },
+      "id": "send-to-backend",
+      "name": "Send to Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1050, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1",
+          "name": "Backend API Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "id": "batch-processor",
+      "name": "Batch Processor",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [950, 450]
+    },
+    {
+      "parameters": {
+        "amount": 1000,
+        "unit": "ms"
+      },
+      "id": "rate-limiter",
+      "name": "Rate Limiter",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1050, 450]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [[{"node": "Fetch Hotel Directory", "type": "main", "index": 0}]]
+    },
+    "Fetch Hotel Directory": {
+      "main": [[{"node": "Extract Hotel Data", "type": "main", "index": 0}]]
+    },
+    "Extract Hotel Data": {
+      "main": [[{"node": "Process & Clean Data", "type": "main", "index": 0}]]
+    },
+    "Process & Clean Data": {
+      "main": [[{"node": "Batch Processor", "type": "main", "index": 0}]]
+    },
+    "Batch Processor": {
+      "main": [
+        [{"node": "Send to Backend", "type": "main", "index": 0}],
+        [{"node": "Rate Limiter", "type": "main", "index": 0}]
+      ]
+    },
+    "Rate Limiter": {
+      "main": [[{"node": "Batch Processor", "type": "main", "index": 0}]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "error-handler-workflow"
+  },
+  "tags": ["scraping", "hotels", "austria"],
+  "triggerCount": 0,
+  "versionId": "1.0.0"
+}

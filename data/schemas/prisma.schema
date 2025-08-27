@@ -1,0 +1,296 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Core Lead Model
+model Lead {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Basic Information
+  companyName String
+  type        BusinessType
+  category    String? // e.g., "4-star", "boutique", "fine dining"
+  
+  // Contact Information
+  website String?
+  email   String?
+  phone   String?
+  
+  // Location
+  address    String?
+  city       String
+  region     String // Austrian states: Wien, Niederösterreich, etc.
+  postalCode String?
+  latitude   Float?
+  longitude  Float?
+  
+  // Business Details
+  capacity         Int? // rooms for hotels, seats for restaurants
+  lastRenovation   DateTime?
+  yearEstablished  Int?
+  ownershipType    OwnershipType?
+  starRating       Int? // 1-5 for hotels
+  priceRange       PriceRange?
+  
+  // Lead Management
+  status              LeadStatus          @default(NEW)
+  score               Int                 @default(0) // 0-100
+  qualificationNotes  String?
+  assignedTo          String?
+  
+  // Business Intelligence
+  renovationPlanned   Boolean             @default(false)
+  budgetRange         BudgetRange?
+  decisionMakerRole   String?
+  contactAttempts     Int                 @default(0)
+  lastContactDate     DateTime?
+  
+  // Metadata
+  source              String              // Source of the lead (website, directory, etc.)
+  sourceUrl           String?
+  scrapedAt           DateTime?
+  enrichedAt          DateTime?
+  validatedAt         DateTime?
+  
+  // GDPR Compliance
+  gdprConsent         Boolean             @default(false)
+  gdprConsentDate     DateTime?
+  dataRetentionUntil  DateTime?
+  
+  // Relations
+  contacts            Contact[]
+  enrichmentData      EnrichmentData[]
+  activities          Activity[]
+  validations         Validation[]
+  tags                LeadTag[]
+  
+  // Indexes
+  @@index([city, region])
+  @@index([type, status])
+  @@index([score])
+  @@index([createdAt])
+  @@map("leads")
+}
+
+// Contact Information for Decision Makers
+model Contact {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  
+  // Personal Information
+  firstName String?
+  lastName  String?
+  fullName  String
+  title     String?
+  role      String // e.g., "General Manager", "Owner", "Purchasing Manager"
+  
+  // Contact Details
+  email       String?
+  phone       String?
+  linkedIn    String?
+  
+  // Metadata
+  isPrimary   Boolean @default(false)
+  source      String? // How we found this contact
+  confidence  Int     @default(0) // 0-100, how confident we are in this data
+  
+  @@map("contacts")
+}
+
+// AI Enrichment Data
+model EnrichmentData {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  
+  // AI Service Information
+  aiService   AIService // Which AI service provided the data
+  model       String?   // Specific model used
+  
+  // Enrichment Results
+  data        Json      // Flexible JSON storage for enrichment data
+  confidence  Int       // 0-100 confidence score
+  cost        Float?    // Cost of this enrichment in EUR
+  
+  // Status
+  status      EnrichmentStatus @default(PENDING)
+  error       String?
+  
+  @@map("enrichment_data")
+}
+
+// Activity Tracking
+model Activity {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  
+  // Activity Details
+  type        ActivityType
+  description String
+  userId      String?      // Who performed the activity
+  
+  // Additional Data
+  metadata    Json?        // Additional structured data
+  
+  @@map("activities")
+}
+
+// Manual Validation Records
+model Validation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  
+  // Validation Details
+  validatedBy String              // User who validated
+  result      ValidationResult
+  notes       String?
+  
+  // Validation Criteria
+  businessActive      Boolean?
+  contactInfoValid    Boolean?
+  renovationPotential Boolean?
+  gdprCompliant       Boolean?
+  
+  @@map("validations")
+}
+
+// Tagging System
+model Tag {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  color       String?   // Hex color for UI
+  description String?
+  
+  leads LeadTag[]
+  
+  @@map("tags")
+}
+
+model LeadTag {
+  leadId String
+  tagId  String
+  
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@id([leadId, tagId])
+  @@map("lead_tags")
+}
+
+// System Configuration
+model Config {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+  
+  @@map("config")
+}
+
+// Enums
+enum BusinessType {
+  HOTEL
+  RESTAURANT
+  SPA
+  VENUE
+  RESORT
+  LODGE
+  PENSION
+  CAFE
+  BAR
+  OTHER
+}
+
+enum OwnershipType {
+  INDEPENDENT
+  CHAIN
+  FRANCHISE
+  FAMILY_OWNED
+  CORPORATE
+  UNKNOWN
+}
+
+enum PriceRange {
+  BUDGET         // €
+  MID_RANGE      // €€
+  UPSCALE        // €€€
+  LUXURY         // €€€€
+}
+
+enum BudgetRange {
+  UNDER_10K      // < €10,000
+  BETWEEN_10K_50K    // €10,000 - €50,000
+  BETWEEN_50K_100K   // €50,000 - €100,000
+  BETWEEN_100K_500K  // €100,000 - €500,000
+  OVER_500K      // > €500,000
+}
+
+enum LeadStatus {
+  NEW
+  QUALIFIED
+  CONTACTED
+  OPPORTUNITY
+  PROPOSAL_SENT
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+  DISQUALIFIED
+  ON_HOLD
+}
+
+enum AIService {
+  CLAUDE
+  OPENAI
+  PERPLEXITY
+  DEEPSEEK
+}
+
+enum EnrichmentStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ActivityType {
+  LEAD_CREATED
+  LEAD_UPDATED
+  ENRICHMENT_COMPLETED
+  VALIDATION_COMPLETED
+  CONTACT_ATTEMPTED
+  EMAIL_SENT
+  MEETING_SCHEDULED
+  NOTE_ADDED
+  STATUS_CHANGED
+  TAG_ADDED
+}
+
+enum ValidationResult {
+  VALID
+  INVALID
+  REQUIRES_REVIEW
+  INCOMPLETE_DATA
+}
