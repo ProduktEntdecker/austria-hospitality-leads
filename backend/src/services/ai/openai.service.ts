@@ -214,4 +214,122 @@ export class OpenAIService {
       throw error;
     }
   }
+
+  // NEW: GPT-4 Vision for hospitality project verification per Andy's feedback
+  async analyzeHospitalityProjects(imageUrls: string[]): Promise<{
+    hospitalityVerified: boolean;
+    confidence: number;
+    projectTypes: string[];
+    explanation: string;
+    genuineSupplierScore: number; // Anti-SEO stuffing score
+  }> {
+    try {
+      const imageMessages = imageUrls.map(url => ({
+        role: 'user' as const,
+        content: [
+          { type: 'text' as const, text: `Analyze this project image to verify if it's genuine hospitality work (hotels, restaurants) vs residential/stock photos:` },
+          { type: 'image_url' as const, image_url: { url } }
+        ]
+      }));
+
+      const completion = await this.client.chat.completions.create({
+        model: 'gpt-4-vision-preview',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert in hospitality interior design verification. Andy needs to distinguish genuine hospitality suppliers from SEO keyword stuffers.
+            
+            KEY REQUIREMENTS (per Andy's feedback):
+            1. Look for COMMERCIAL hospitality features (reception desks, hotel lobbies, restaurant dining rooms, commercial kitchens)
+            2. Distinguish from RESIDENTIAL projects (home living rooms, private bedrooms, house kitchens)
+            3. Identify stock photos vs real project photos
+            4. Score genuine supplier credibility (0-100) based on project authenticity
+            
+            HOSPITALITY INDICATORS:
+            - Hotel reception/lobby areas
+            - Restaurant dining rooms with commercial seating
+            - Commercial bar setups
+            - Hotel room interiors (multiple identical units)
+            - Conference rooms/meeting spaces
+            - Commercial lighting in hospitality settings
+            - Professional kitchen equipment
+            - Spa/wellness facilities
+            
+            RESIDENTIAL/FAKE INDICATORS:
+            - Home living rooms, bedrooms, private kitchens
+            - Single-family house interiors
+            - Stock photography watermarks
+            - Generic furniture catalog images
+            - No commercial/business context`
+          },
+          ...imageMessages,
+          {
+            role: 'user',
+            content: `Based on all images analyzed, return JSON with:
+            - hospitalityVerified: boolean (true if genuine hospitality projects)
+            - confidence: 0-100 (confidence in verification)
+            - projectTypes: array of identified project types
+            - explanation: why this is/isn't genuine hospitality work
+            - genuineSupplierScore: 0-100 (anti-SEO stuffing score based on project authenticity)`
+          }
+        ],
+        temperature: 0.2,
+        max_tokens: 800,
+        response_format: { type: 'json_object' }
+      });
+
+      const content = completion.choices[0].message.content;
+      return content ? JSON.parse(content) : {
+        hospitalityVerified: false,
+        confidence: 0,
+        projectTypes: [],
+        explanation: 'Analysis failed',
+        genuineSupplierScore: 0
+      };
+    } catch (error) {
+      logger.error('Image analysis error', { error, imageUrls });
+      throw error;
+    }
+  }
+
+  // Mobile number extraction from web content
+  async extractMobileNumbers(webContent: string): Promise<{
+    mobileNumbers: string[];
+    confidence: number;
+  }> {
+    try {
+      const completion = await this.client.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: `Extract Austrian mobile phone numbers from web content. Austrian mobile numbers start with +43 6xx, 0043 6xx, or 06xx.
+            Look for mobile vs landline indicators (Handy, Mobil, mobile, cell phone context).`
+          },
+          {
+            role: 'user',
+            content: `Extract mobile phone numbers from this Austrian business website content:
+            
+            ${webContent}
+            
+            Return JSON with:
+            - mobileNumbers: array of mobile numbers found (formatted as +43...)
+            - confidence: 0-100 based on clear mobile indicators vs generic phone numbers`
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 300,
+        response_format: { type: 'json_object' }
+      });
+
+      const content = completion.choices[0].message.content;
+      return content ? JSON.parse(content) : {
+        mobileNumbers: [],
+        confidence: 0
+      };
+    } catch (error) {
+      logger.error('Mobile extraction error', { error });
+      throw error;
+    }
+  }
 }

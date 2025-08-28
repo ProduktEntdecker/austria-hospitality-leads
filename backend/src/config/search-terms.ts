@@ -4,27 +4,35 @@
  */
 
 export const AUSTRIAN_SEARCH_TERMS = {
-  // Primary search terms (most important)
+  // Primary search terms (most important) - HOSPITALITY keyword prioritized per Andy's feedback
   PRIMARY: [
+    'hospitality austria',
+    'hospitality design österreich',
+    'hospitality interior austria',
+    'hotel ausstatter hospitality',
+    'hospitality furniture austria',
+    'hospitality lighting austria',
     'hoteleinrichtung',
     'hotelausstatter', 
     'gastronomieeinrichtung',
-    'innenarchitekten hotel',
-    'lichtplanung gastronomie',
-    'möbel hotel restaurant'
+    'innenarchitekten hotel hospitality',
+    'lichtplanung gastronomie hospitality',
+    'möbel hotel restaurant hospitality'
   ],
 
-  // Interior Design & Architecture
+  // Interior Design & Architecture - Enhanced with HOSPITALITY focus
   INTERIOR_DESIGN: [
-    'innenarchitektur hotel',
+    'hospitality innenarchitektur',
+    'hospitality interior design austria',
+    'innenarchitektur hotel hospitality',
     'innenarchitektur gastronomie',
-    'hoteldesign',
+    'hoteldesign hospitality',
     'restaurantdesign',
     'inneneinrichtung hotel',
     'hotelarchitekt',
     'gastronomie innenarchitekt',
-    'hospitality design',
-    'hotel interior design'
+    'hospitality design austria',
+    'hotel interior design hospitality'
   ],
 
   // Hotel Outfitting
