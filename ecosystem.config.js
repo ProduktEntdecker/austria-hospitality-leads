@@ -77,7 +77,7 @@ module.exports = {
       repo: 'https://github.com/ProduktEntdecker/austria-hospitality-leads.git',
       path: '/opt/austria-hospitality-leads',
       'pre-deploy-local': '',
-      'post-deploy': 'npm install && npm run build && pm2 reload ecosystem.config.js --env production',
+      'post-deploy': 'npm install && npm run build && pm2 startOrReload ecosystem.config.js --env production',
       'pre-setup': ''
     }
   }

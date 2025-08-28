@@ -61,7 +61,7 @@ services:
       PORT: 3001
       DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/austria_leads
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
-      
+
       # AI API Keys
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
@@ -178,7 +178,7 @@ services:
 
   # Prometheus for Monitoring
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.52.0
     container_name: austria-leads-prometheus-prod
     restart: unless-stopped
     command:

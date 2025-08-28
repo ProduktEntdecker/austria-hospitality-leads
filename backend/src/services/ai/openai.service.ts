@@ -183,7 +183,7 @@ export class OpenAIService {
   }> {
     try {
       const completion = await this.client.chat.completions.create({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'user',
@@ -233,7 +233,7 @@ export class OpenAIService {
       }));
 
       const completion = await this.client.chat.completions.create({
-        model: 'gpt-4-vision-preview',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -299,7 +299,7 @@ export class OpenAIService {
   }> {
     try {
       const completion = await this.client.chat.completions.create({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',

@@ -1,21 +1,29 @@
 import { Lead } from '@/types';
 import { logger } from '@utils/logger';
 
+type QualityFactors = {
+  contentAuthenticity: number;
+  businessCredibility: number;
+  hospitalitySpecialization: number;
+  contactTransparency: number;
+  projectPortfolio: number;
+};
+
+type GenuineSupplierResult = {
+  genuineSupplierScore: number;
+  qualityFactors: QualityFactors;
+  redFlags: string[];
+  recommendations: string[];
+};
+
 export class FilteringService {
   
   // Main filtering service per Andy's anti-SEO requirements
-  async scoreGenuineSupplier(lead: Partial<Lead>, webContent?: string, projectImages?: string[]): Promise<{
-    genuineSupplierScore: number;
-    qualityFactors: {
-      contentAuthenticity: number;
-      businessCredibility: number;
-      hospitalitySpecialization: number;
-      contactTransparency: number;
-      projectPortfolio: number;
-    };
-    redFlags: string[];
-    recommendations: string[];
-  }> {
+  async scoreGenuineSupplier(
+    lead: Partial<Lead>,
+    webContent?: string,
+    projectImages?: string[]
+  ): Promise<GenuineSupplierResult> {
     try {
       const factors = {
         contentAuthenticity: await this.scoreContentAuthenticity(webContent || ''),
@@ -284,7 +292,7 @@ export class FilteringService {
     return redFlags;
   }
 
-  private generateRecommendations(factors: any, redFlags: string[]): string[] {
+  private generateRecommendations(factors: QualityFactors, redFlags: string[]): string[] {
     const recommendations: string[] = [];
 
     if (factors.contactTransparency < 50) {

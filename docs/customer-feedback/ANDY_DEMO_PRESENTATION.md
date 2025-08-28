@@ -2,7 +2,7 @@
 
 ## 🎯 Your Feedback Implemented
 
-**Date**: November 2024  
+**Last updated**: August 2025 (initial implementation: November 2024)  
 **Status**: ✅ All 4 Requirements Implemented  
 **Result**: Production-ready system with your specific improvements
 
@@ -210,10 +210,10 @@ interface EnhancedLead {
 - **Total Savings**: 10 minutes per lead
 
 ### Cost Analysis  
-- **GPT-4 Vision**: ~€0.15 per company (5 images)
-- **Mobile Extraction**: ~€0.02 per company  
-- **Quality Scoring**: ~€0.05 per company
-- **Total Additional Cost**: €0.22 per lead
+- **OpenAI vision model**: ~€0.15 per company (5 images) (est., as of Nov 2024)
+- **Mobile Extraction**: ~€0.02 per company (est.)
+- **Quality Scoring**: ~€0.05 per company (est.)
+- **Total Additional Cost**: ~€0.22 per lead (est.; review quarterly)
 - **ROI**: 10 minutes saved worth €5-15 vs €0.22 cost = **20x return**
 
 ---
@@ -285,5 +285,5 @@ Andy, your feedback transformed a good system into an excellent one. The 4 impro
 
 **Ready to proceed?** The enhanced system awaits your approval for deployment.
 
-*Prepared by: Claude Code Assistant*  
+*Prepared by: Austria Hospitality Leads Team*  
 *Implementation Date: November 2024*

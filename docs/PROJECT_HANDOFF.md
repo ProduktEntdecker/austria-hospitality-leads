@@ -5,7 +5,8 @@
 **Project Name**: Austria Hospitality Outfitters B2B Discovery System  
 **Purpose**: Automated identification and enrichment of Austrian companies that provide services to hotels and restaurants  
 **Status**: ✅ Production-ready with 83% validation success rate  
-**Completion Date**: November 2024
+**Completion Date**: November 2024 (initial build)
+**Last reviewed**: August 2025
 
 ## 📋 What Was Built
 
@@ -242,7 +243,7 @@ austria-hospitality-leads/
 - **GDPR Compliance**: Regular review of data handling practices
 
 ### Technical Contact
-- Repository: https://github.com/ProduktEntdecker/austria-hospitality-leads
+- Repository: [ProduktEntdecker/austria-hospitality-leads](https://github.com/ProduktEntdecker/austria-hospitality-leads)
 - Documentation: Complete in `/docs` folder
 - Issues: Use GitHub Issues for technical questions
 
