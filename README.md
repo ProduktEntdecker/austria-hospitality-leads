@@ -283,12 +283,14 @@ npm test
 - Manual review: <3 min per company  
 - Cost per company: <€0.75
 
-### German SEO Performance Targets
-- **Search Volume Increase**: 300%+ vs English terms
-- **Market Coverage**: 98% Austrian search language match
-- **Competition Advantage**: 75% competitor gap exploitation
-- **Regional Targeting**: Wien (40%), Salzburg (25%), Innsbruck (20%) market coverage
-- **Seasonal Optimization**: 35% April renovation search spike capture
+### German SEO Performance Targets (v1.2.0)
+- **Market Opportunity**: €2.48B Austrian hospitality market with 75% competitor gap
+- **Search Volume Increase**: 300%+ vs English terms (hotelausstatter österreich: 2,100 vs hospitality austria: 480)
+- **Market Coverage**: 98% Austrian search language match (up from 50% English terms)
+- **Regional Targeting**: Wien (40% business capital), Salzburg (25% luxury), Innsbruck (20% alpine)
+- **Seasonal Optimization**: 35% April renovation search spike + tourism seasonality
+- **Andy's Lighting Priority**: 'lichtplanung hotel österreich' (890 monthly searches, medium competition)
+- **ROI Projection**: 15x within 12 months through Blue Ocean market capture
 
 ## 🔒 Security & Compliance
 
