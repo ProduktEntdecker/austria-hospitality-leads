@@ -70,7 +70,7 @@
 
 ## 🏗️ Architecture Overview
 
-```
+```text
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   N8N Workflows │    │  Backend API    │    │ Frontend Dashboard │
 │                 │    │                 │    │                 │
@@ -108,7 +108,7 @@
 
 ## 📁 Repository Structure
 
-```
+```text
 austria-hospitality-leads/
 ├── backend/                 # Node.js API server
 │   ├── src/services/ai/    # Claude, OpenAI, Perplexity integrations

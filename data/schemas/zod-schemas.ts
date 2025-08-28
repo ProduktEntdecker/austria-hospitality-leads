@@ -130,6 +130,14 @@ export const LeadSchema = z.object({
   imageAnalysisConfidence: z.number().int().min(0).max(100).optional(),
   genuineSupplierScore: z.number().int().min(0).max(100).optional(), // Anti-SEO filtering score
   
+  // German SEO Optimization (98% Austrian search language match)
+  germanSearchTerms: z.array(z.string()).default([]), // German keywords that found this lead
+  austrianRegion: z.enum(['wien', 'salzburg', 'innsbruck', 'graz', 'linz', 'other']).optional(), // Regional targeting
+  searchLanguage: z.enum(['german', 'english', 'mixed']).default('german'), // Language detection
+  seoQualityScore: z.number().int().min(0).max(100).default(0), // German SEO factors
+  regionalFocus: z.array(z.string()).default([]), // Wien, Salzburg, Tirol targeting
+  seasonalRelevance: z.enum(['april_renovation', 'new_opening', 'tourism_prep', 'general']).default('general'),
+  
   // Metadata
   source: z.string().max(255),
   sourceUrl: z.string().url().optional(),

@@ -27,7 +27,7 @@
 - No international targeting capability
 
 ### After (Our Implementation)
-```
+```text
 PRIMARY SEARCH TERMS (Now Hospitality-First):
 ✅ 'hospitality austria'
 ✅ 'hospitality design österreich'  

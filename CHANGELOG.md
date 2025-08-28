@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.1.0] - 2024-11-28 - Andy Requirements Implementation
+## [1.1.0] - 2025-08-28 - Andy Requirements Implementation
 
 ### Added
 - **Hospitality Keyword Prioritization**: Enhanced search terms with "hospitality" focus for international targeting
@@ -79,7 +79,7 @@ All 4 critical requirements from customer Andy successfully implemented:
 ✅ Image analysis to distinguish genuine hospitality projects
 ✅ Better filtering to separate genuine suppliers from SEO keyword stuffers
 
-## [1.0.0] - 2024-11-20
+## [1.0.0] - 2025-08-27
 
 ### Added
 - Initial project setup with complete B2B hospitality outfitting focus
@@ -133,5 +133,6 @@ All 4 critical requirements from customer Andy successfully implemented:
 - Docker deployment configuration
 - Comprehensive monitoring and logging
 
-[Unreleased]: https://github.com/ProduktEntdecker/austria-hospitality-leads/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/ProduktEntdecker/austria-hospitality-leads/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/ProduktEntdecker/austria-hospitality-leads/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ProduktEntdecker/austria-hospitality-leads/releases/tag/v1.0.0
