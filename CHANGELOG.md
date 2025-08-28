@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Docker Security**: Pinned Docker images to specific versions for production stability
+  - n8n: `latest` → `1.58.2` (stable automation platform version)
+  - Prometheus: `latest` → `v2.52.0` (current stable monitoring version)
+  - Grafana: `latest` → `11.2.0` (current stable dashboard version)
+- **Configuration**: Updated PM2 deployment to use `startOrReload` for better first-time deployment
+- **OpenAI Models**: Updated to current model versions (`gpt-4o`, `gpt-4o-mini`)
+- **TypeScript**: Added proper type safety to FilteringService removing `any` types
+
 ## [1.2.0] - 2025-08-28 - German SEO Optimization
 
 ### Added

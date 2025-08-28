@@ -119,7 +119,7 @@ services:
 
   # N8N Automation Platform
   n8n:
-    image: n8nio/n8n:latest
+    image: n8nio/n8n:1.58.2
     container_name: austria-leads-n8n
     restart: unless-stopped
     environment:
@@ -170,7 +170,7 @@ services:
 
   # Monitoring with Prometheus (optional)
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.52.0
     container_name: austria-leads-prometheus
     restart: unless-stopped
     command:
@@ -190,7 +190,7 @@ services:
 
   # Grafana for Dashboards (optional)
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:11.2.0
     container_name: austria-leads-grafana
     restart: unless-stopped
     environment:
