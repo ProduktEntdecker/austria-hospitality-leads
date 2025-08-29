@@ -3,6 +3,7 @@ import { z } from 'zod';
 // Base validation schemas
 export const EmailSchema = z.string().email('Invalid email format');
 export const PhoneSchema = z.string().regex(/^(\+43|0043|0)[1-9]\d{1,14}$/, 'Invalid Austrian phone number');
+export const MobilePhoneSchema = z.string().regex(/^(\+43|0043|0)6[0-9]{8,9}$/, 'Invalid Austrian mobile number');
 export const WebsiteSchema = z.string().url('Invalid website URL').optional();
 export const PostalCodeSchema = z.string().regex(/^\d{4}$/, 'Invalid Austrian postal code');
 
@@ -93,6 +94,7 @@ export const LeadSchema = z.object({
   website: WebsiteSchema,
   email: EmailSchema.optional(),
   phone: PhoneSchema.optional(),
+  mobile: MobilePhoneSchema.optional(), // Added per Andy's feedback - crucial for Austrian businesses
   
   // Location details
   address: z.string().max(500).optional(),
@@ -122,6 +124,19 @@ export const LeadSchema = z.object({
   avgProjectValue: z.number().int().min(1000).optional(),
   hospitalityFocus: z.array(HospitalityFocusSchema).default([]),
   decisionMakerRole: z.string().max(100).optional(),
+  
+  // AI Verification (per Andy's requirements)
+  hospitalityVerified: z.boolean().default(false), // GPT-4 Vision verification of hospitality projects
+  imageAnalysisConfidence: z.number().int().min(0).max(100).optional(),
+  genuineSupplierScore: z.number().int().min(0).max(100).optional(), // Anti-SEO filtering score
+  
+  // German SEO Optimization (98% Austrian search language match)
+  germanSearchTerms: z.array(z.string()).default([]), // German keywords that found this lead
+  austrianRegion: z.enum(['wien', 'salzburg', 'innsbruck', 'graz', 'linz', 'other']).optional(), // Regional targeting
+  searchLanguage: z.enum(['german', 'english', 'mixed']).default('german'), // Language detection
+  seoQualityScore: z.number().int().min(0).max(100).default(0), // German SEO factors
+  regionalFocus: z.array(z.string()).default([]), // Wien, Salzburg, Tirol targeting
+  seasonalRelevance: z.enum(['april_renovation', 'new_opening', 'tourism_prep', 'general']).default('general'),
   
   // Metadata
   source: z.string().max(255),
@@ -157,6 +172,7 @@ export const ContactSchema = z.object({
   // Contact details
   email: EmailSchema.optional(),
   phone: PhoneSchema.optional(),
+  mobile: MobilePhoneSchema.optional(), // Added per Andy's feedback - crucial for Austrian businesses
   linkedIn: z.string().url().optional(),
   
   // Metadata
