@@ -34,12 +34,19 @@ cd ../frontend && npm install
 
 # Set up environment variables
 cp .env.example .env
-# Edit .env with your API keys
+
+# Configure API keys (choose one method):
+# Option 1: Use the web interface (recommended)
+npm run dev
+# Navigate to http://localhost:3000/settings
+
+# Option 2: Edit .env directly
+# See API_KEY_SETUP.md for detailed instructions
 
 # Start development servers
 npm run dev
 
-# Import N8N workflows
+# Import N8N workflows (optional)
 npm run n8n:import
 ```
 
@@ -140,6 +147,35 @@ cd austria-hospitality-leads
 2. **Install dependencies**
 ```bash
 npm run install:all
+```
+
+3. **Configure API Keys**
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Add your API keys using one of these methods:
+
+# Method 1: Web Interface (Recommended)
+npm run dev
+# Navigate to http://localhost:3000/settings
+# Enter and test your API keys securely
+
+# Method 2: Manual Configuration
+# Edit .env file and add your keys
+# See API_KEY_SETUP.md for detailed instructions
+```
+
+4. **Database Setup**
+```bash
+# Start PostgreSQL and Redis
+docker-compose up -d postgres redis
+
+# Run migrations
+npm run db:migrate
+
+# Seed sample data (optional)
+npm run db:seed
 ```
 
 3. **Configure environment**

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Secure API Key Management System**: Enterprise-grade key management with encryption
+  - AES-256-GCM encryption for stored API keys
+  - Web-based secure configuration interface at `/settings`
+  - Key validation and testing endpoints
+  - Masked display showing only first/last 4 characters
+  - Per-customer key isolation for production deployments
+  - Comprehensive API_KEY_SETUP.md documentation
+
 ### Fixed
 - **Docker Security**: Pinned Docker images to specific versions for production stability
   - n8n: `latest` → `1.58.2` (stable automation platform version)
@@ -15,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Configuration**: Updated PM2 deployment to use `startOrReload` for better first-time deployment
 - **OpenAI Models**: Updated to current model versions (`gpt-4o`, `gpt-4o-mini`)
 - **TypeScript**: Added proper type safety to FilteringService removing `any` types
+
+### Security
+- **API Keys**: Removed all hardcoded keys, now using encrypted storage
+- **Environment**: Enhanced .gitignore to exclude `.keys.encrypted` and `.env.keys`
+- **Frontend**: Keys never exposed to client-side code
 
 ## [1.2.0] - 2025-08-28 - German SEO Optimization
 
