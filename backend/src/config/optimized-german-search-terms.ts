@@ -148,7 +148,7 @@ export const OPTIMIZED_GERMAN_SEARCH_TERMS = {
   // TIER 7: Seasonal/Trend Terms (Content Creator Strategy)
   SEASONAL_TRENDS: [
     // Renovation season (April spike - 35% increase)
-    'hotel renovation österreich 2024',
+    'hotel renovation österreich 2025',
     'gastronomie umbau planen',
     'hotelzimmer renovation kosten',
     'restaurant redesign österreich',
@@ -162,7 +162,7 @@ export const OPTIMIZED_GERMAN_SEARCH_TERMS = {
     // Trends and concepts
     'nachhaltiges hotel design österreich',
     'eco friendly restaurant einrichtung',
-    'moderne hoteleinrichtung 2024',
+    'moderne hoteleinrichtung 2025',
     'zeitgemäße gastronomieausstattung'
   ],
 
@@ -186,7 +186,7 @@ export const OPTIMIZED_GERMAN_SEARCH_TERMS = {
     'behagliche hotelzimmer',
     'einladende gastronomie ambiente'
   ]
-};
+} as const;
 
 // SEARCH TERM COMBINATIONS FOR DIFFERENT PLATFORMS
 export const GERMAN_SEARCH_COMBINATIONS = {
@@ -228,7 +228,7 @@ export const GERMAN_SEARCH_COMBINATIONS = {
     'hospitality austria magazine',
     'gastronomie fachzeitung österreich'
   ]
-};
+} as const;
 
 // NEGATIVE KEYWORDS (To avoid end customers)
 export const GERMAN_NEGATIVE_KEYWORDS = [
@@ -246,7 +246,7 @@ export const GERMAN_NEGATIVE_KEYWORDS = [
   'hotel wellness wochenende',
   'kulinarik tour österreich',
   'genuss reise salzburg'
-];
+] as const;
 
 // AUSTRIAN REGIONAL MODIFIERS
 export const AUSTRIAN_REGIONAL_MODIFIERS = [
@@ -256,15 +256,15 @@ export const AUSTRIAN_REGIONAL_MODIFIERS = [
   'kärnten', 'steiermark', 'burgenland',
   
   // Major cities
-  'vienna', 'salzburg city', 'innsbruck', 
+  'wien', 'salzburg', 'innsbruck', 
   'graz', 'linz', 'klagenfurt', 
   'bregenz', 'eisenstadt', 'st. pölten',
   
   // Tourism regions
   'kitzbühel', 'zell am see', 'bad gastein',
-  'hallstatt region', 'wachau valley',
+  'hallstatt', 'wachau',
   'salzkammergut', 'ötztal', 'zillertal'
-];
+] as const;
 
 // BUSINESS TYPE IDENTIFIERS (Austrian Legal Forms)
 export const AUSTRIAN_BUSINESS_IDENTIFIERS = [
@@ -277,7 +277,7 @@ export const AUSTRIAN_BUSINESS_IDENTIFIERS = [
   'ausstatter', 'einrichter', 'lieferant',
   'anbieter', 'hersteller', 'produzent',
   'dienstleister', 'spezialist', 'experte'
-];
+] as const;
 
 // QUALITY AND TRUST INDICATORS
 export const GERMAN_QUALITY_INDICATORS = [
@@ -285,13 +285,13 @@ export const GERMAN_QUALITY_INDICATORS = [
   'österreichische qualität',
   'made in austria',
   'österreichisches handwerk',
-  'qualitäts garantie',
+  'qualitätsgarantie',
   
   // Certifications and awards
   'iso zertifiziert',
-  'qualitäts auszeichnung',
-  'award gewinner',
-  'branche führer',
+  'qualitätsauszeichnung',
+  'preisträger',
+  'branchenführer',
   
   // Experience indicators
   'jahre erfahrung',
