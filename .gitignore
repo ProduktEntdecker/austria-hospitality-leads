@@ -78,6 +78,8 @@ temp/
 *.crt
 secrets/
 credentials/
+.keys.encrypted
+.env.keys
 
 # Generated files
 generated/
