@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
-import { logger } from '@utils/logger';
-import { Lead } from '@/types';
+import logger from '../../utils/logger';
+import { Lead, ImageAnalysisResult, MobileExtractionResult } from '../../types';
 
 export class OpenAIService {
   private client: OpenAI;

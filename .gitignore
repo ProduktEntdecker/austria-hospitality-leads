@@ -140,4 +140,4 @@ public/uploads/
 # Build analytics
 .build-analytics/
 webpack-stats.json
-bundle-report.html
+bundle-report.html.env.demo

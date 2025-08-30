@@ -38,7 +38,7 @@
 ## 🏆 Key Discovery: Perfect Match Found
 
 ### lichtwert concept GmbH - Enhanced Validation Results
-```
+```text
 Company: lichtwert concept GmbH
 Managing Director: Franz Ainz
 Phone: +43 662 265718

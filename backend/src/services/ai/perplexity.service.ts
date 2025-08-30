@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { logger } from '@utils/logger';
+import logger from '../../utils/logger';
 
 export class PerplexityService {
   private apiKey: string;
@@ -16,7 +16,7 @@ export class PerplexityService {
     competitorInfo: string[];
   }> {
     try {
-      const searchQuery = `"${companyName}" hoteleinrichtung OR hotelausstatter OR gastronomieeinrichtung "${location}" Austria`;
+      const _searchQuery = `"${companyName}" hoteleinrichtung OR hotelausstatter OR gastronomieeinrichtung "${location}" Austria`;
       
       const response = await axios.post(
         `${this.baseUrl}/chat/completions`,

@@ -25,7 +25,7 @@ const TestKeySchema = z.object({
  * GET /api/keys
  * Get masked API keys
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
   try {
     const maskedKeys = await keyManager.getMaskedKeys();
     res.json({
@@ -144,7 +144,7 @@ router.delete('/:provider', async (req: Request, res: Response) => {
  * DELETE /api/keys
  * Clear all API keys
  */
-router.delete('/', async (req: Request, res: Response) => {
+router.delete('/', async (_req: Request, res: Response) => {
   try {
     await keyManager.clearAllKeys();
     
@@ -165,7 +165,7 @@ router.delete('/', async (req: Request, res: Response) => {
  * GET /api/keys/status
  * Get the status of all configured keys
  */
-router.get('/status', async (req: Request, res: Response) => {
+router.get('/status', async (_req: Request, res: Response) => {
   try {
     const keys = await keyManager.loadKeys();
     const status: Record<string, boolean> = {};

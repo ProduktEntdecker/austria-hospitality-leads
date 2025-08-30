@@ -1,0 +1,55 @@
+# Demo Dockerfile for Andy's presentation
+FROM node:18-alpine
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files first for better layer caching
+COPY package*.json ./
+COPY backend/package*.json ./backend/
+COPY frontend/package*.json ./frontend/
+
+# Install dependencies
+RUN npm ci --only=production && \
+    cd backend && npm ci --only=production && \
+    cd ../frontend && npm ci --only=production && \
+    npm cache clean --force
+
+# Copy application code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Remove dev dependencies to reduce image size
+RUN npm prune --production && \
+    cd backend && npm prune --production && \
+    cd ../frontend && npm prune --production
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+# Change ownership of app directory
+RUN chown -R nextjs:nodejs /app
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
+EXPOSE 3000
+
+# Set demo environment
+ENV NODE_ENV=production
+ENV DEMO_MODE=true
+ENV PORT=3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Start the application
+CMD ["npm", "run", "demo:start"]
