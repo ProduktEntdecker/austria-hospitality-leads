@@ -1,5 +1,5 @@
-import { Lead } from '@/types';
-import { logger } from '@utils/logger';
+import { Lead, GermanSEOAnalysis } from '../types';
+import logger from '../utils/logger';
 import { 
   AUSTRIAN_SEARCH_TERMS,
   SEARCH_COMBINATIONS,
@@ -150,7 +150,7 @@ export class GermanSEOService {
   /**
    * Detects seasonal relevance for Content Creator 35% April spike strategy
    */
-  private detectSeasonalRelevance(lead: Partial<Lead>, webContent: string): 'april_renovation' | 'new_opening' | 'tourism_prep' | 'general' {
+  private detectSeasonalRelevance(_lead: Partial<Lead>, webContent: string): 'april_renovation' | 'new_opening' | 'tourism_prep' | 'general' {
     const content = webContent.toLowerCase();
     
     if (content.includes('renovation') || content.includes('umbau') || content.includes('sanierung')) {

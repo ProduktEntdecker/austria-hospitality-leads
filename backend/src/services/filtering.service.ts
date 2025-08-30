@@ -1,5 +1,5 @@
-import { Lead } from '@/types';
-import { logger } from '@utils/logger';
+import { Lead, FilteringResult } from '../types';
+import logger from '../utils/logger';
 
 type QualityFactors = {
   contentAuthenticity: number;
@@ -227,7 +227,7 @@ export class FilteringService {
     if (lead.website && lead.companyName) {
       const websiteDomain = lead.website.toLowerCase();
       const companyWords = lead.companyName.toLowerCase().split(/\s+/);
-      const hasNameMatch = companyWords.some(word => 
+      const hasNameMatch = companyWords.some((word: string) => 
         word.length > 3 && websiteDomain.includes(word)
       );
       if (hasNameMatch) score += 15;
