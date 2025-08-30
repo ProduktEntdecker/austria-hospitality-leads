@@ -2,8 +2,23 @@
 export interface Lead {
   id: string;
   name: string;
+  companyName: string;
   description?: string;
   website?: string;
+  type?: string;
+  city?: string;
+  region?: string;
+  country?: string;
+  address?: string;
+  postalCode?: string;
+  phone?: string;
+  mobile?: string;
+  email?: string;
+  contactPerson?: string;
+  employeeCount?: number;
+  yearEstablished?: number;
+  uid?: string; // Austrian business registry ID
+  hospitalityFocus?: string[];
   location?: {
     city?: string;
     region?: string;
@@ -58,6 +73,14 @@ export interface Company extends Lead {
   vatNumber?: string;
   businessType?: string;
   certifications?: string[];
+}
+
+export interface CompanyResearch {
+  companyName: string;
+  type: string;
+  city: string;
+  region: string;
+  [key: string]: any; // For additional research data
 }
 
 // AI Service Types

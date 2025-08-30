@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import logger from '../../utils/logger';
-import { Lead, AIAnalysisResult } from '../../types';
+import { Lead, CompanyResearch } from '../../types';
 
 export class ClaudeService {
   private client: Anthropic;

@@ -326,7 +326,7 @@ export class APIKeyManagerService {
         `https://maps.googleapis.com/maps/api/geocode/json?address=Vienna&key=${key}`
       );
       
-      const data = await response.json();
+      const data = await response.json() as { status: string };
       return data.status !== 'REQUEST_DENIED';
     } catch {
       return false;

@@ -1,7 +1,21 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
+import rateLimit from 'express-rate-limit';
+// import session from 'express-session';  // Imported for types only
 
 const router = Router();
+
+// Rate limiting for demo login attempts
+const demoLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message: {
+    success: false,
+    error: 'Too many login attempts, please try again later'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Demo authentication schema
 const DemoLoginSchema = z.object({
@@ -20,7 +34,7 @@ interface DemoSession {
  * POST /api/demo/login
  * Authenticate demo user
  */
-router.post('/login', (req: Request, res: Response) => {
+router.post('/login', demoLoginLimiter, (req: Request, res: Response) => {
   try {
     const { demoPassword } = DemoLoginSchema.parse(req.body);
     
@@ -32,8 +46,15 @@ router.post('/login', (req: Request, res: Response) => {
       });
     }
     
-    // Validate demo password
-    const validPassword = process.env.DEMO_PASSWORD || 'AndyDemo2025!';
+    // Validate demo password - must be explicitly set in environment
+    const validPassword = process.env.DEMO_PASSWORD;
+    if (!validPassword) {
+      return res.status(500).json({
+        success: false,
+        error: 'Demo password not configured'
+      });
+    }
+    
     if (demoPassword !== validPassword) {
       return res.status(401).json({
         success: false,
@@ -155,7 +176,7 @@ router.post('/logout', (req: Request, res: Response) => {
  * GET /api/demo/data
  * Get sample Austrian hospitality companies for demo
  */
-router.get('/data', demoAuthMiddleware, (req: Request, res: Response) => {
+router.get('/data', demoAuthMiddleware, (_req: Request, res: Response) => {
   try {
     const demoCompanies = [
       {
@@ -350,6 +371,13 @@ declare global {
     interface Request {
       demoUser?: DemoSession;
     }
+  }
+}
+
+// Extend session data interface
+declare module 'express-session' {
+  interface SessionData {
+    demo?: DemoSession;
   }
 }
 
